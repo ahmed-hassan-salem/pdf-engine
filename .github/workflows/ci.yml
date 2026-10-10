@@ -1,0 +1,34 @@
+name: Foundation checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  rust-and-dart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.95.0
+        with:
+          components: rustfmt, clippy
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.13.3'
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets --offline -- -D warnings
+      - run: cargo test --workspace --offline
+      - run: cargo build -p engine-ffi --offline
+      - run: dart format --output=none --set-exit-if-changed packages/smart_document_engine examples/flutter_demo/lib
+      - run: dart analyze packages/smart_document_engine
+      - run: dart packages/smart_document_engine/tool/smoke_test.dart "$PWD/target/debug/libengine_ffi.so"
+  flutter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.4'
+      - working-directory: examples/flutter_demo
+        run: flutter pub get
+      - working-directory: examples/flutter_demo
+        run: flutter analyze
