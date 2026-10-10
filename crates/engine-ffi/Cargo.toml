@@ -1,0 +1,12 @@
+[package]
+name = "engine-ffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+document-model = { path = "../document-model" }
+feature-engines = { path = "../feature-engines" }
